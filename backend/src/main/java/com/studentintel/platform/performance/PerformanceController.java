@@ -3,8 +3,10 @@ package com.studentintel.platform.performance;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.studentintel.platform.dto.PerformanceResponse;
 import com.studentintel.platform.semester.Semester;
 import com.studentintel.platform.semester.SemesterRepository;
 import com.studentintel.platform.student.Student;
@@ -33,30 +35,45 @@ public class PerformanceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PerformanceRecord>> getAllPerformance() {
-        return ResponseEntity.ok(performanceRecordRepository.findAll());
+    public ResponseEntity<List<PerformanceResponse>> getAllPerformance() {
+
+        List<PerformanceResponse> response =
+                performanceRecordRepository.findAll()
+                        .stream()
+                        .map(PerformanceResponse::from)
+                        .toList();
+
+        return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@studentSecurityService.canAccessStudent(#studentId, authentication)")
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<PerformanceRecord>> getStudentPerformance(
+    public ResponseEntity<List<PerformanceResponse>> getStudentPerformance(
             @PathVariable Long studentId) {
 
-        return ResponseEntity.ok(
-                performanceRecordRepository.findByStudentId(studentId));
+        List<PerformanceResponse> response =
+                performanceRecordRepository.findByStudentId(studentId)
+                        .stream()
+                        .map(PerformanceResponse::from)
+                        .toList();
+
+        return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@studentSecurityService.canAccessStudent(#studentId, authentication)")
     @GetMapping("/student/{studentId}/latest")
-    public ResponseEntity<PerformanceRecord> getLatestPerformance(
+    public ResponseEntity<PerformanceResponse> getLatestPerformance(
             @PathVariable Long studentId) {
 
         return performanceRecordRepository
                 .findTopByStudentIdOrderByCalculatedAtDesc(studentId)
+                .map(PerformanceResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/calculate")
-    public ResponseEntity<PerformanceRecord> calculate(
+    public ResponseEntity<PerformanceResponse> calculate(
             @RequestParam Long studentId,
             @RequestParam Long semesterId) {
 
@@ -68,9 +85,12 @@ public class PerformanceController {
                 .orElseThrow(() ->
                         new IllegalArgumentException("Semester not found"));
 
-        return ResponseEntity.ok(
+        PerformanceRecord record =
                 performanceService.calculatePerformance(
                         student,
-                        semester));
+                        semester);
+
+        return ResponseEntity.ok(
+                PerformanceResponse.from(record));
     }
 }

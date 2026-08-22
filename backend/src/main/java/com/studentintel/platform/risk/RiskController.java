@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.studentintel.platform.dto.RiskResponse;
 import com.studentintel.platform.semester.Semester;
 import com.studentintel.platform.semester.SemesterRepository;
 import com.studentintel.platform.student.Student;
@@ -34,31 +36,45 @@ public class RiskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RiskAssessment>> getAllRiskAssessments() {
-        return ResponseEntity.ok(
-                riskAssessmentRepository.findAll());
+    public ResponseEntity<List<RiskResponse>> getAllRiskAssessments() {
+
+        List<RiskResponse> response =
+                riskAssessmentRepository.findAll()
+                        .stream()
+                        .map(RiskResponse::from)
+                        .toList();
+
+        return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@studentSecurityService.canAccessStudent(#studentId, authentication)")
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<RiskAssessment>> getStudentRisk(
+    public ResponseEntity<List<RiskResponse>> getStudentRisk(
             @PathVariable Long studentId) {
 
-        return ResponseEntity.ok(
-                riskAssessmentRepository.findByStudentId(studentId));
+        List<RiskResponse> response =
+                riskAssessmentRepository.findByStudentId(studentId)
+                        .stream()
+                        .map(RiskResponse::from)
+                        .toList();
+
+        return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@studentSecurityService.canAccessStudent(#studentId, authentication)")
     @GetMapping("/student/{studentId}/latest")
-    public ResponseEntity<RiskAssessment> getLatestRisk(
+    public ResponseEntity<RiskResponse> getLatestRisk(
             @PathVariable Long studentId) {
 
         return riskAssessmentRepository
                 .findTopByStudentIdOrderByCalculatedAtDesc(studentId)
+                .map(RiskResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/calculate")
-    public ResponseEntity<RiskAssessment> calculate(
+    public ResponseEntity<RiskResponse> calculate(
             @RequestParam Long studentId,
             @RequestParam Long semesterId,
             @RequestParam BigDecimal academicScore,
@@ -66,19 +82,20 @@ public class RiskController {
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Student not found"));
+                        new IllegalArgumentException("Student not found"));
 
         Semester semester = semesterRepository.findById(semesterId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Semester not found"));
+                        new IllegalArgumentException("Semester not found"));
 
-        return ResponseEntity.ok(
+        RiskAssessment risk =
                 riskService.calculateRisk(
                         student,
                         semester,
                         academicScore,
-                        trendScore));
+                        trendScore);
+
+        return ResponseEntity.ok(
+                RiskResponse.from(risk));
     }
 }

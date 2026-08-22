@@ -3,6 +3,7 @@ package com.studentintel.platform.assessmentresult;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,12 +14,15 @@ public class AssessmentResultController {
 
     public AssessmentResultController(
             AssessmentResultRepository assessmentResultRepository) {
+
         this.assessmentResultRepository = assessmentResultRepository;
     }
 
     @GetMapping
     public ResponseEntity<List<AssessmentResult>> getAllResults() {
-        return ResponseEntity.ok(assessmentResultRepository.findAll());
+
+        return ResponseEntity.ok(
+                assessmentResultRepository.findAll());
     }
 
     @GetMapping("/{id}")
@@ -30,6 +34,7 @@ public class AssessmentResultController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("@studentSecurityService.canAccessStudent(#studentId, authentication)")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<AssessmentResult>> getStudentResults(
             @PathVariable Long studentId) {

@@ -4,11 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.studentintel.platform.performance.PerformanceRecord;
+import com.studentintel.platform.dto.PerformanceResponse;
+import com.studentintel.platform.dto.RiskResponse;
 import com.studentintel.platform.performance.PerformanceRecordRepository;
-import com.studentintel.platform.risk.RiskAssessment;
 import com.studentintel.platform.risk.RiskAssessmentRepository;
 
 @RestController
@@ -29,6 +30,7 @@ public class StudentIntelligenceController {
         this.riskAssessmentRepository = riskAssessmentRepository;
     }
 
+    @PreAuthorize("@studentSecurityService.canAccessStudent(#studentId, authentication)")
     @GetMapping("/{studentId}/intelligence")
     public ResponseEntity<Map<String, Object>> getIntelligence(
             @PathVariable Long studentId) {
@@ -37,16 +39,16 @@ public class StudentIntelligenceController {
             return ResponseEntity.notFound().build();
         }
 
-        PerformanceRecord performance =
+        PerformanceResponse performance =
                 performanceRecordRepository
-                        .findTopByStudentIdOrderByCalculatedAtDesc(
-                                studentId)
+                        .findTopByStudentIdOrderByCalculatedAtDesc(studentId)
+                        .map(PerformanceResponse::from)
                         .orElse(null);
 
-        RiskAssessment risk =
+        RiskResponse risk =
                 riskAssessmentRepository
-                        .findTopByStudentIdOrderByCalculatedAtDesc(
-                                studentId)
+                        .findTopByStudentIdOrderByCalculatedAtDesc(studentId)
+                        .map(RiskResponse::from)
                         .orElse(null);
 
         Map<String, Object> response = new HashMap<>();
