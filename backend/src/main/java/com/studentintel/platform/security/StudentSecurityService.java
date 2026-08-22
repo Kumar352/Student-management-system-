@@ -3,7 +3,6 @@ package com.studentintel.platform.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.studentintel.platform.student.Student;
 import com.studentintel.platform.student.StudentRepository;
 
 @Service("studentSecurityService")
@@ -37,10 +36,8 @@ public class StudentSecurityService {
         }
 
         // Students can access only their own record.
-        return studentRepository.findById(studentId)
-                .map(Student::getUser)
-                .map(user -> user.getEmail())
-                .map(email -> email.equals(authentication.getName()))
-                .orElse(false);
+        return studentRepository.existsByIdAndUserEmail(
+                studentId,
+                authentication.getName());
     }
 }
