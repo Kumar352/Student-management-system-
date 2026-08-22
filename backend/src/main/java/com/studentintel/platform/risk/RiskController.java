@@ -35,7 +35,8 @@ public class RiskController {
 
     @GetMapping
     public ResponseEntity<List<RiskAssessment>> getAllRiskAssessments() {
-        return ResponseEntity.ok(riskAssessmentRepository.findAll());
+        return ResponseEntity.ok(
+                riskAssessmentRepository.findAll());
     }
 
     @GetMapping("/student/{studentId}")
@@ -65,11 +66,13 @@ public class RiskController {
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Student not found"));
+                        new IllegalArgumentException(
+                                "Student not found"));
 
         Semester semester = semesterRepository.findById(semesterId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("Semester not found"));
+                        new IllegalArgumentException(
+                                "Semester not found"));
 
         return ResponseEntity.ok(
                 riskService.calculateRisk(
