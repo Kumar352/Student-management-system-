@@ -46,6 +46,16 @@ public class RiskController {
                 riskAssessmentRepository.findByStudentId(studentId));
     }
 
+    @GetMapping("/student/{studentId}/latest")
+    public ResponseEntity<RiskAssessment> getLatestRisk(
+            @PathVariable Long studentId) {
+
+        return riskAssessmentRepository
+                .findTopByStudentIdOrderByCalculatedAtDesc(studentId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/calculate")
     public ResponseEntity<RiskAssessment> calculate(
             @RequestParam Long studentId,

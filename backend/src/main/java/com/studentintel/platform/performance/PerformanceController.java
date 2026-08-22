@@ -45,6 +45,16 @@ public class PerformanceController {
                 performanceRecordRepository.findByStudentId(studentId));
     }
 
+    @GetMapping("/student/{studentId}/latest")
+    public ResponseEntity<PerformanceRecord> getLatestPerformance(
+            @PathVariable Long studentId) {
+
+        return performanceRecordRepository
+                .findTopByStudentIdOrderByCalculatedAtDesc(studentId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/calculate")
     public ResponseEntity<PerformanceRecord> calculate(
             @RequestParam Long studentId,

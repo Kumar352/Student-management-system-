@@ -10,8 +10,6 @@ public interface RiskAssessmentRepository
 
     List<RiskAssessment> findByStudentId(Long studentId);
 
-    List<RiskAssessment> findByRiskLevel(String riskLevel);
-
     Optional<RiskAssessment> findTopByStudentIdOrderByCalculatedAtDesc(
             Long studentId);
 }

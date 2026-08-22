@@ -10,9 +10,10 @@ public interface PerformanceRecordRepository
 
     List<PerformanceRecord> findByStudentId(Long studentId);
 
-    List<PerformanceRecord> findBySemesterId(Long semesterId);
-
     Optional<PerformanceRecord> findByStudentIdAndSemesterId(
             Long studentId,
             Long semesterId);
+
+    Optional<PerformanceRecord> findTopByStudentIdOrderByCalculatedAtDesc(
+            Long studentId);
 }
