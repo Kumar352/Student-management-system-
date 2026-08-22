@@ -1,6 +1,7 @@
 package com.studentintel.platform.risk;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,17 +17,33 @@ import com.studentintel.platform.service.RiskService;
 public class RiskController {
 
     private final RiskService riskService;
+    private final RiskAssessmentRepository riskAssessmentRepository;
     private final StudentRepository studentRepository;
     private final SemesterRepository semesterRepository;
 
     public RiskController(
             RiskService riskService,
+            RiskAssessmentRepository riskAssessmentRepository,
             StudentRepository studentRepository,
             SemesterRepository semesterRepository) {
 
         this.riskService = riskService;
+        this.riskAssessmentRepository = riskAssessmentRepository;
         this.studentRepository = studentRepository;
         this.semesterRepository = semesterRepository;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<RiskAssessment>> getAllRiskAssessments() {
+        return ResponseEntity.ok(riskAssessmentRepository.findAll());
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<RiskAssessment>> getStudentRisk(
+            @PathVariable Long studentId) {
+
+        return ResponseEntity.ok(
+                riskAssessmentRepository.findByStudentId(studentId));
     }
 
     @PostMapping("/calculate")

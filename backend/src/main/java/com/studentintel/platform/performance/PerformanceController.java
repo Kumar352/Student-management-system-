@@ -1,5 +1,7 @@
 package com.studentintel.platform.performance;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,17 +16,33 @@ import com.studentintel.platform.service.PerformanceService;
 public class PerformanceController {
 
     private final PerformanceService performanceService;
+    private final PerformanceRecordRepository performanceRecordRepository;
     private final StudentRepository studentRepository;
     private final SemesterRepository semesterRepository;
 
     public PerformanceController(
             PerformanceService performanceService,
+            PerformanceRecordRepository performanceRecordRepository,
             StudentRepository studentRepository,
             SemesterRepository semesterRepository) {
 
         this.performanceService = performanceService;
+        this.performanceRecordRepository = performanceRecordRepository;
         this.studentRepository = studentRepository;
         this.semesterRepository = semesterRepository;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PerformanceRecord>> getAllPerformance() {
+        return ResponseEntity.ok(performanceRecordRepository.findAll());
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<PerformanceRecord>> getStudentPerformance(
+            @PathVariable Long studentId) {
+
+        return ResponseEntity.ok(
+                performanceRecordRepository.findByStudentId(studentId));
     }
 
     @PostMapping("/calculate")
