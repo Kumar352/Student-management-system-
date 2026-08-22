@@ -3,6 +3,8 @@ package com.studentintel.platform.student;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/students")
 public class StudentWriteController {
@@ -15,7 +17,7 @@ public class StudentWriteController {
 
     @PostMapping
     public ResponseEntity<Student> createStudent(
-            @RequestBody Student student) {
+            @Valid @RequestBody Student student) {
 
         return ResponseEntity.ok(
                 studentRepository.save(student));
