@@ -79,14 +79,31 @@ public class RiskService {
             BigDecimal assessment,
             BigDecimal trend) {
 
-        BigDecimal score = BigDecimal.valueOf(100)
-                .subtract(attendance.multiply(BigDecimal.valueOf(0.25)))
-                .add(BigDecimal.valueOf(100).subtract(academic)
-                        .multiply(BigDecimal.valueOf(0.30)))
-                .add(BigDecimal.valueOf(100).subtract(assessment)
-                        .multiply(BigDecimal.valueOf(0.30)))
-                .add(BigDecimal.valueOf(100).subtract(trend)
-                        .multiply(BigDecimal.valueOf(0.15)));
+        BigDecimal attendanceRisk =
+                BigDecimal.valueOf(100)
+                        .subtract(attendance)
+                        .multiply(BigDecimal.valueOf(0.25));
+
+        BigDecimal academicRisk =
+                BigDecimal.valueOf(100)
+                        .subtract(academic)
+                        .multiply(BigDecimal.valueOf(0.30));
+
+        BigDecimal assessmentRisk =
+                BigDecimal.valueOf(100)
+                        .subtract(assessment)
+                        .multiply(BigDecimal.valueOf(0.30));
+
+        BigDecimal trendRisk =
+                BigDecimal.valueOf(100)
+                        .subtract(trend)
+                        .multiply(BigDecimal.valueOf(0.15));
+
+        BigDecimal score =
+                attendanceRisk
+                        .add(academicRisk)
+                        .add(assessmentRisk)
+                        .add(trendRisk);
 
         return score.max(BigDecimal.ZERO)
                 .min(BigDecimal.valueOf(100))
